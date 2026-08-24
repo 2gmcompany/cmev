@@ -1,0 +1,22 @@
+(() => {
+  const services = {
+    consultas:'Atendimento clínico como ponto de partida para o seu cuidado.', especialidades:'Consultas em áreas de especialidade disponíveis no centro médico.', dentaria:'Cuidados de medicina dentária para a sua saúde oral.', optometria:'Serviço de optometria para apoio à saúde visual.', nutricao:'Acompanhamento nutricional orientado para o bem-estar.', laboratorio:'Análises clínicas e laboratoriais integradas ao seu cuidado.', ocupacional:'Serviços de saúde ocupacional para organizações e profissionais.', farmacia:'Apoio farmacêutico no centro médico.', enfermagem:'Cuidados de enfermagem com atenção e proximidade.'
+  };
+  const labels = {consultas:'Consultas gerais',especialidades:'Consultas de especialidades',dentaria:'Medicina dentária',optometria:'Optometria',nutricao:'Nutrição',laboratorio:'Análises clínicas e laboratoriais',ocupacional:'Saúde ocupacional',farmacia:'Farmácia',enfermagem:'Cuidados de enfermagem'};
+  const header=document.querySelector('.site-header'), menu=document.querySelector('.menu-toggle'), links=document.querySelector('.nav-links');
+  window.addEventListener('scroll',()=>header.classList.toggle('is-scrolled',scrollY>24),{passive:true});
+  menu.addEventListener('click',()=>{const on=links.classList.toggle('is-open');menu.setAttribute('aria-expanded',on);});
+  links.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>links.classList.remove('is-open')));
+  document.querySelectorAll('[data-service]').forEach(button=>button.addEventListener('click',()=>{
+    const key=button.dataset.service; document.querySelectorAll('[data-service]').forEach(x=>x.setAttribute('aria-selected','false')); button.setAttribute('aria-selected','true');
+    document.querySelector('[data-service-title]').textContent=labels[key]; document.querySelector('[data-service-copy]').textContent=services[key]; document.querySelector('[data-service-button]').dataset.selected=key;
+  }));
+  const select=document.querySelector('#form-service'); Object.entries(labels).forEach(([value,label])=>select.insertAdjacentHTML('beforeend',`<option value="${value}">${label}</option>`));
+  document.querySelectorAll('.js-appointment').forEach(btn=>btn.addEventListener('click',()=>{if(btn.dataset.selected)select.value=btn.dataset.selected;document.querySelector('#contactos').scrollIntoView({behavior:'smooth'});setTimeout(()=>select.focus(),600)}));
+  const lightbox=document.querySelector('.lightbox'); document.querySelectorAll('[data-lightbox]').forEach(item=>item.addEventListener('click',()=>{lightbox.querySelector('img').src=item.dataset.lightbox;lightbox.querySelector('img').alt=item.dataset.alt;lightbox.showModal()})); lightbox.querySelector('button').addEventListener('click',()=>lightbox.close());
+  const form=document.querySelector('#booking-form'), status=form.querySelector('.form-status'); form.addEventListener('submit',async e=>{e.preventDefault();if(!form.checkValidity()){form.reportValidity();return}const endpoint=window.ERGOVIDA_CONFIG?.formEndpoint;if(!endpoint){status.className='form-status error';status.textContent='Formulário pronto para envio. Antes de publicar, configure um endpoint seguro em js/config.js.';return}status.className='form-status';status.textContent='A enviar…';try{const r=await fetch(endpoint,{method:'POST',body:new FormData(form),headers:{Accept:'application/json'}});if(!r.ok)throw Error();form.reset();status.className='form-status success';status.textContent='Obrigado. A sua mensagem foi recebida. Entraremos em contacto consigo brevemente.'}catch{status.className='form-status error';status.textContent='Não foi possível enviar neste momento. Por favor, contacte-nos pelo telefone ou email.'}});
+  const instagram=window.ERGOVIDA_CONFIG?.instagramUrl;if(instagram){document.querySelector('.social__box p').innerHTML='Acompanhe as actualizações da Ergovida nas redes sociais.';const a=document.createElement('a');a.href=instagram;a.target='_blank';a.rel='noopener';a.className='button button--ghost';a.textContent='Ver no Instagram →';document.querySelector('.social__box .button').replaceWith(a)}
+  document.querySelector('#year').textContent=new Date().getFullYear();
+  const observer=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}}),{threshold:.12});document.querySelectorAll('.reveal').forEach(e=>observer.observe(e));
+  window.addEventListener('load',()=>setTimeout(()=>document.querySelector('.loader').classList.add('is-hidden'),650));
+})();
